@@ -25,7 +25,7 @@ services:
     ports:
       - '9000:9000'
     volumes:
-      - ./symfony:/var/www/symfony_docker
+      - ./backend:/var/www/backend
       - composer_cache:/composer
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -38,7 +38,7 @@ services:
     ports:
       - '8080:80'
     volumes:
-      - ./symfony:/var/www/symfony_docker
+      - ./backend:/var/www/backend
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
