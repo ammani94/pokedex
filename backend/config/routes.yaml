@@ -9,3 +9,15 @@
 
 controllers:
     resource: routing.controllers
+
+signup:
+    path: /signup
+    controller: App\Controller\ApiAuthController::CreateAccount
+
+login:
+    path: /login
+    controller: App\Controller\ApiAuthController::login
+
+user:
+    path: /user
+    controller: App\Controller\ApiAuthController::GetUserData

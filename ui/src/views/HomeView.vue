@@ -1,0 +1,83 @@
+<template>
+  <div>
+    <div v-if="loading">Chargement en cours...</div>
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="listPokemon" class="container element" >
+      <li class="pokemon-card" v-for="listPokemons in pokemons" :key="listPokemons.name">
+        <h2>{{ listPokemons.name }} (ID: {{ listPokemons.id }})</h2>
+        <img :src="listPokemons.sprites.front_default" :alt="listPokemons.name" />
+        <p>Types: {{ listPokemons.types.map(t => t.type.name).join(', ') }}</p>
+        <p>Poids: {{ listPokemons.weight / 10 }} kg</p>
+        <p>Taille: {{ listPokemons.height / 10 }} m</p>
+      </li>
+      <!--  -->
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+
+export default {
+  data() {
+    return {
+      pokemons: null,
+      listPokemon: null,
+      loading: false,
+      error: null,
+    }
+  },
+  async mounted() {
+    await this.fetchPokemons()
+  },
+  methods: {
+    async fetchPokemons() {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await axios.get('https://pokeapi.co/api/v2/pokemon/')
+        this.listPokemon = response.data.results
+        
+        const pokemonDetails = await Promise.all(
+          this.listPokemon.map(async (pokemon) => {
+            const pokemonResponse = await axios.get(pokemon.url)
+            return pokemonResponse.data
+          })
+        )
+        this.pokemons = pokemonDetails
+      } catch (err) {
+        console.error("Erreur lors de la récupération:", err)
+        this.error = "Impossible de charger les données."
+      } finally {
+        this.loading = false
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.element {
+  width: calc(70% - 10px);
+  margin: 5px;
+}
+
+
+.pokemon-card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  max-width: 300px;
+  text-align: center;
+}
+.error {
+  color: red;
+}
+</style>
