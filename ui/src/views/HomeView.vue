@@ -3,41 +3,49 @@
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="listPokemon" class="container element" >
-      <li class="pokemon-card" v-for="listPokemons in pokemons" :key="listPokemons.name">
+      <div class="pokemon-card" v-for="listPokemons in pokemons" :key="listPokemons.name">
         <h2>{{ listPokemons.name }} (ID: {{ listPokemons.id }})</h2>
         <img :src="listPokemons.sprites.front_default" :alt="listPokemons.name" />
         <p>Types: {{ listPokemons.types.map(t => t.type.name).join(', ') }}</p>
         <p>Poids: {{ listPokemons.weight / 10 }} kg</p>
         <p>Taille: {{ listPokemons.height / 10 }} m</p>
-      </li>
-      <!--  -->
+      </div>
+      
     </div>
+    <div v-if="previous">
+      <button @click="() => fetchPokemons(previous)"> Précédent</button>  
+    </div>
+    <button @click="() => fetchPokemons(next)"> Suivant</button>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
-
+let url = 'https://pokeapi.co/api/v2/pokemon/'
 export default {
   data() {
     return {
       pokemons: null,
       listPokemon: null,
+      next: null,
+      previous: null,
       loading: false,
       error: null,
     }
   },
   async mounted() {
-    await this.fetchPokemons()
+    await this.fetchPokemons(url)
   },
   methods: {
-    async fetchPokemons() {
+    async fetchPokemons(url) {
+      //alert(url)
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get('https://pokeapi.co/api/v2/pokemon/')
+        const response = await axios.get(url)
         this.listPokemon = response.data.results
-        
+        this.next = response.data.next
+        this.previous = response.data.previous
         const pokemonDetails = await Promise.all(
           this.listPokemon.map(async (pokemon) => {
             const pokemonResponse = await axios.get(pokemon.url)
