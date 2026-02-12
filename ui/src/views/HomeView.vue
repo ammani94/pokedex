@@ -9,18 +9,22 @@
         <p>Types: {{ listPokemons.types.map(t => t.type.name).join(', ') }}</p>
         <p>Poids: {{ listPokemons.weight / 10 }} kg</p>
         <p>Taille: {{ listPokemons.height / 10 }} m</p>
+        <button @click="() => catchPokemons(listPokemons)"> Capturer</button>
       </div>
       
     </div>
     <div v-if="previous">
-      <button @click="() => fetchPokemons(previous)"> Précédent</button>  
+      <button @click="() => fetchPokemons(previous)"> Précédent</button>
     </div>
-    <button @click="() => fetchPokemons(next)"> Suivant</button>
-  </div>
+    <div v-if="next">
+      <button @click="() => fetchPokemons(next)"> Suivant</button>
+    </div>
+  </div>  
 </template>
 
 <script>
 import axios from 'axios'
+import { ref, toRaw, onMounted } from 'vue'
 let url = 'https://pokeapi.co/api/v2/pokemon/'
 export default {
   data() {
@@ -31,6 +35,10 @@ export default {
       previous: null,
       loading: false,
       error: null,
+      formData: {
+        api_id: '',
+        name: ''
+      }
     }
   },
   async mounted() {
@@ -38,7 +46,6 @@ export default {
   },
   methods: {
     async fetchPokemons(url) {
-      //alert(url)
       this.loading = true
       this.error = null
       try {
@@ -58,6 +65,28 @@ export default {
         this.error = "Impossible de charger les données."
       } finally {
         this.loading = false
+      }
+    },
+    async catchPokemons(listPokemon) {
+      try {
+        this.formData.api_id = listPokemon.id
+        this.formData.name = listPokemon.name
+        const response = await axios.post(
+          'http://localhost:8080/catch',
+          this.formData,
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+        if (response.data.success) {
+          alert(response.data.message)
+        }
+        console.log("Réponse :", response)
+      } catch (error) {
+        console.error("Erreur :", error)
       }
     },
   },

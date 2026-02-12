@@ -15,36 +15,24 @@ use App\Entity\UserPokemon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-class ApiAuthController extends AbstractController
+class PokemonsController extends AbstractController
 {
-    #[Route('/login')]
-    public function login(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, SessionInterface $session): Response
+    #[Route('/catch')]
+    public function catch(Request $request, EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
         $data = json_decode($request->getContent(), true);
-        if (empty($data['email']) || empty($data['password'])) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Nom d\'utilisateur ou mot de passe manquant',
-            ], 400);
-        }
+        $userId = $session->get('user_id');
 
-        $user = $entityManager->getRepository(Users::class)->findOneBy(['email' => $data['email']]);
+        $pokemon = new Pokemons();
+        $pokemon->setApiId($data['api_id']);
+        $pokemon->setUserId($userId);
+        $pokemon->setCapturedAt(new \DateTime());
+        $entityManager->persist($pokemon);
+        $entityManager->flush();
 
-         if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Nom d\'utilisateur ou mot de passe incorrect',
-            ], 401);
-        }
-        $session->set('user_id', $user->getId());
-        $session->set('user_email', $user->getEmail());
         return $this->json([
             'success' => true,
-            'message' => 'Connexion réussie',
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-            ],
+            'message' => 'Pokémon '.$data['name']. ' capturé',
         ]);
     }
 
@@ -101,29 +89,20 @@ class ApiAuthController extends AbstractController
     }
 
     #[Route('/user')]
-    public function GetUserData(SessionInterface $session, EntityManagerInterface $entityManager): Response
+    public function GetUserData(SessionInterface $session): Response
     {
         $userId = $session->get('user_id');
         $userEmail = $session->get('user_email');
-        $pokemons = $entityManager->getRepository(Pokemons::class)->findBy(['user_id' => $userId]);
-        $PokemonsList = array_map(function ($pokemon) {
-            return [
-                'id' => $pokemon->getId(),
-                'user_id' => $pokemon->getUserId(),
-                'api_id' => $pokemon->getApiId(),
-                'captured_at' => $pokemon->getCapturedAt()
-            ];
-        }, $pokemons);
+        
         if ($userId === null) {
             return $this->json([
                 'success' => false,
                 'message' => 'Aucune session active',
             ], 401);
         }
+
         return $this->json([
             'success' => true,
-            'pokemons_count' => count($pokemons),
-            'pokemons' => $PokemonsList,
             'user' => [
                 'id' => $userId,
                 'email' => $userEmail,

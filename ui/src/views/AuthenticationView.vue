@@ -15,7 +15,7 @@ const submitForm = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(toRaw(formData.value)),
-    });
+    })
 
     const result = await response.json()
     if (result.success) {

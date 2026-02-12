@@ -16,11 +16,11 @@ class Pokemons
     #[ORM\Column]
     private ?int $api_id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $name = null;
+    #[ORM\Column]
+    private ?int $user_id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $type = null;
+    #[ORM\Column]
+    private ?\DateTime $captured_at = null;
 
     public function getId(): ?int
     {
@@ -39,26 +39,26 @@ class Pokemons
         return $this;
     }
 
-    public function getName(): ?string
+    public function getUserId(): ?int
     {
-        return $this->name;
+        return $this->user_id;
     }
 
-    public function setName(string $name): static
+    public function setUserId(int $user_id): static
     {
-        $this->name = $name;
+        $this->user_id = $user_id;
 
         return $this;
     }
 
-    public function getType(): ?string
+    public function getCapturedAt(): ?\DateTime
     {
-        return $this->type;
+        return $this->captured_at;
     }
 
-    public function setType(string $type): static
+    public function setCapturedAt(\DateTime $captured_at): static
     {
-        $this->type = $type;
+        $this->captured_at = $captured_at;
 
         return $this;
     }

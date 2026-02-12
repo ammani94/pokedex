@@ -21,3 +21,7 @@ login:
 user:
     path: /user
     controller: App\Controller\ApiAuthController::GetUserData
+
+catch:
+    path: /catch
+    controller: App\Controller\PokemonsController::catch

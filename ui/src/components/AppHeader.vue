@@ -11,7 +11,8 @@
           <li v-for="link in navLinks" :key="link.path">
             <router-link :to="link.path">{{ link.text }}</router-link>
           </li>
-        </ul>
+          <li>Capturés ( {{PokemonInfo}} )</li>
+        </ul> 
       </nav>
     </div>
   </header>
@@ -27,15 +28,18 @@ const navLinks = [
   { path: "/", text: "Contact" },
 ]
 let userAccount = ref([])
+let PokemonInfo = ref([])
 const user = async () => {
   try {
     const response = await fetch('http://localhost:8080/user', {
       method: 'GET',
       credentials: 'include',
-    })
+    }) 
     const result = await response.json()
     if (result.success) {
       userAccount.value = result.user
+      PokemonInfo.value = result.pokemons_count
+      console.log(PokemonInfo)
     } else {
       router.push({name: 'authentification'})
     }
