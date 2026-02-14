@@ -18,6 +18,10 @@ login:
     path: /login
     controller: App\Controller\ApiAuthController::login
 
+logout:
+    path: /logout
+    controller: App\Controller\ApiAuthController::logout
+
 user:
     path: /user
     controller: App\Controller\ApiAuthController::GetUserData
@@ -25,3 +29,13 @@ user:
 catch:
     path: /catch
     controller: App\Controller\PokemonsController::catch
+
+getpokemons:
+    path: /getpokemons
+    controller: App\Controller\PokemonsController::GetPokemons
+
+deletepokemons:
+    path: /deletePokemon/{id}
+    controller: App\Controller\PokemonsController::deletePokemons
+    requirements:
+        id: '\d+'

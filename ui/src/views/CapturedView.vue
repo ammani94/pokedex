@@ -9,17 +9,10 @@
         <p>Types: {{ listPokemons.types.map(t => t.type.name).join(', ') }}</p>
         <p>Poids: {{ listPokemons.weight / 10 }} kg</p>
         <p>Taille: {{ listPokemons.height / 10 }} m</p>
-        <button @click="() => catchPokemons(listPokemons)"> Capturer</button>
+        <button @click="() => deletePokemons(listPokemons.id)"> Libérer {{listPokemons.id }}</button>
       </div>
-      
     </div>
-    <div v-if="previous">
-      <button @click="() => fetchPokemons(previous)"> Précédent</button>
-    </div>
-    <div v-if="next">
-      <button @click="() => fetchPokemons(next)"> Suivant</button>
-    </div>
-  </div>  
+  </div>
 </template>
 
 <script>
@@ -42,20 +35,40 @@ export default {
     }
   },
   async mounted() {
-    await this.fetchPokemons(url)
+    await this.fetchPokemons()
   },
   methods: {
-    async fetchPokemons(url) {
+    async fetchPokemons() {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get(url)
-        this.listPokemon = response.data.results
-        this.next = response.data.next
-        this.previous = response.data.previous
+        const response = await axios.get('http://localhost:8080/getpokemons')
+        this.listPokemon = response.data.pokemons
         const pokemonDetails = await Promise.all(
           this.listPokemon.map(async (pokemon) => {
-            const pokemonResponse = await axios.get(pokemon.url)
+            const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
+            return pokemonResponse.data
+          })
+        )
+        this.pokemons = pokemonDetails
+        console.log(this.listPokemon)
+      } catch (err) {
+        console.error("Erreur lors de la récupération:", err)
+        this.error = "Impossible de charger les données."
+      } finally {
+        this.loading = false
+      }
+    },
+    async deletePokemons(id) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await axios.get('http://localhost:8080/deletePokemon/'+id)
+        this.listPokemon = response.data.pokemons
+        
+        const pokemonDetails = await Promise.all(
+          this.listPokemon.map(async (pokemon) => {
+            const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
             return pokemonResponse.data
           })
         )
@@ -66,26 +79,7 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    async catchPokemons(listPokemon) {
-      try {
-        this.formData.api_id = listPokemon.id
-        this.formData.name = listPokemon.name
-        const response = await axios.post(
-          'http://localhost:8080/catch',
-          this.formData,
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-        alert(response.data.message)
-      } catch (error) {
-        console.error("Erreur :", error)
-      }
-    },
+    }
   },
 };
 </script>

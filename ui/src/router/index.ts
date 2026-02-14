@@ -2,9 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AuthenticationView from '../views/AuthenticationView.vue'
 import SignupView from '../views/SignupView.vue'
 import HomeView from '../views/HomeView.vue'
+import CapturedView from '../views/CapturedView.vue'
 const routes = [
   { path: '/', name: 'authentification', component: AuthenticationView, meta: { hideHeader: true } },
   { path: '/signup', name: 'signup', component: SignupView, meta: { hideHeader: true } },
+  { path: '/captured', name: 'captured', component: CapturedView },
   { path: '/home', name: 'home', component: HomeView }
 ]
 

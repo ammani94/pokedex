@@ -11,7 +11,6 @@
           <li v-for="link in navLinks" :key="link.path">
             <router-link :to="link.path">{{ link.text }}</router-link>
           </li>
-          <li>Capturés ( {{PokemonInfo}} )</li>
         </ul> 
       </nav>
     </div>
@@ -23,12 +22,14 @@ import { ref, toRaw, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const title = "Pokedex"
+let PokemonInfo = ref([])
 const navLinks = [
-  { path: "/", text: "Accueil"},
+  { path: "/home", text: "Accueil"},
   { path: "/", text: "Contact" },
+  { path: "/captured", text: "Capturés"},
 ]
 let userAccount = ref([])
-let PokemonInfo = ref([])
+
 const user = async () => {
   try {
     const response = await fetch('http://localhost:8080/user', {

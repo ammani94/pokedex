@@ -23,6 +23,17 @@ class PokemonsController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $userId = $session->get('user_id');
 
+        $pokemons = $entityManager->getRepository(Pokemons::class)->findBy([
+            'api_id' => $data['api_id'],
+            'user_id' => $userId,
+        ]);
+        if ($pokemons) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Pokémon '.$data['name']. ' déjà capturé',
+            ]);
+        }
+
         $pokemon = new Pokemons();
         $pokemon->setApiId($data['api_id']);
         $pokemon->setUserId($userId);
@@ -36,77 +47,43 @@ class PokemonsController extends AbstractController
         ]);
     }
 
-    #[Route('/signup', name: 'app_signup', methods: ['POST'])]
-    public function CreateAccount(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
-    {
-        $data = json_decode($request->getContent(), true);
-
-        if (empty($data['email']) || empty($data['password'])) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Email ou mot de passe manquant',
-            ], 400);
-        }
-
-        $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['email' => $data['email']]);
-        if ($existingUser !== null) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Un compte avec cet email existe déjà',
-            ], 400);
-        }
-
-        $user = new Users();
-        $user->setEmail($data['email']);
-
-        $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashedPassword);
-        $user->setRole('normal');
-
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        return $this->json([
-            'success' => true,
-            'message' => 'Compte créé avec succès',
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-            ],
-        ]);
-    }
-
-
-    #[Route('/logout')]
-    public function logout(SessionInterface $session): Response
-    {
-        $session->clear();
-
-        return $this->json([
-            'success' => true,
-            'message' => 'Déconnexion réussie',
-        ]);
-    }
-
-    #[Route('/user')]
-    public function GetUserData(SessionInterface $session): Response
+    #[Route('/getpokemons')]
+    public function GetPokemons(EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
         $userId = $session->get('user_id');
-        $userEmail = $session->get('user_email');
-        
-        if ($userId === null) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Aucune session active',
-            ], 401);
-        }
+
+        $pokemons = $entityManager->getRepository(Pokemons::class)->findBy(['user_id' => 1]);
+        $PokemonsList = array_map(function ($pokemon) {
+            return [
+                'id' => $pokemon->getId(),
+                'user_id' => $pokemon->getUserId(),
+                'api_id' => $pokemon->getApiId(),
+                'captured_at' => $pokemon->getCapturedAt()
+            ];
+        }, $pokemons);
 
         return $this->json([
             'success' => true,
-            'user' => [
-                'id' => $userId,
-                'email' => $userEmail,
-            ],
+            'pokemons' => $PokemonsList,
         ]);
+    }
+
+    #[Route('/deletePokemon/{id}')]
+    public function deletePokemons(EntityManagerInterface $entityManager, int $id, SessionInterface $session)
+    {
+        $pokemon = $entityManager->getRepository(Pokemons::class)->findBy([
+            'user_id' => 1,
+            'api_id' => $id
+        ]);
+        if ($pokemon) {
+            $entityManager->remove($pokemon[0]);
+            $entityManager->flush();
+            return $this->GetPokemons($entityManager, $session);
+        } else {
+            return $this->json([
+                'success' => false,
+                'message' => 'Élément non trouvé'
+            ]);
+        }
     }
 }
