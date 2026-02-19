@@ -105,7 +105,6 @@ class ApiAuthController extends AbstractController
     public function GetUserData(SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
         $userId = $session->get('user_id');
-        error_log(print_r($userId,1));
         $userEmail = $session->get('user_email');
         $pokemons = $entityManager->getRepository(Pokemons::class)->findBy(['user_id' => $userId]);
         $PokemonsList = array_map(function ($pokemon) {

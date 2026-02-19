@@ -1,4 +1,7 @@
 <template>
+  <div class="team">
+    <router-link to="/team">Créer une équipe</router-link>
+  </div>
   <div>
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
@@ -9,7 +12,7 @@
         <p>Types: {{ listPokemons.types.map(t => t.type.name).join(', ') }}</p>
         <p>Poids: {{ listPokemons.weight / 10 }} kg</p>
         <p>Taille: {{ listPokemons.height / 10 }} m</p>
-        <button @click="() => deletePokemons(listPokemons.id)"> Libérer {{listPokemons.id }}</button>
+        <button @click="() => deletePokemons(listPokemons.id_pokemon)"> Libérer </button>
       </div>
     </div>
   </div>
@@ -44,14 +47,19 @@ export default {
       try {
         const response = await axios.get('http://localhost:8080/getpokemons')
         this.listPokemon = response.data.pokemons
+        console.log(this.listPokemon)
         const pokemonDetails = await Promise.all(
           this.listPokemon.map(async (pokemon) => {
             const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
-            return pokemonResponse.data
+            const pokemonData = {
+              ...pokemonResponse.data,
+              id_pokemon: pokemon.id
+            }
+            return pokemonData
           })
         )
         this.pokemons = pokemonDetails
-        console.log(this.listPokemon)
+        console.log(this.pokemons)
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         this.error = "Impossible de charger les données."

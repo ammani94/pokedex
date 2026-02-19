@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use App\Entity\Users;
 use App\Entity\Pokemons;
 use App\Entity\UserPokemon;
+use App\Entity\Team;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -48,10 +49,9 @@ class PokemonsController extends AbstractController
     }
 
     #[Route('/getpokemons')]
-    public function GetPokemons(EntityManagerInterface $entityManager, SessionInterface $session): Response
+    public function GetPokemons(Request $request,EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
         $userId = $session->get('user_id');
-
         $pokemons = $entityManager->getRepository(Pokemons::class)->findBy(['user_id' => 1]);
         $PokemonsList = array_map(function ($pokemon) {
             return [
@@ -71,12 +71,9 @@ class PokemonsController extends AbstractController
     #[Route('/deletePokemon/{id}')]
     public function deletePokemons(EntityManagerInterface $entityManager, int $id, SessionInterface $session)
     {
-        $pokemon = $entityManager->getRepository(Pokemons::class)->findBy([
-            'user_id' => 1,
-            'api_id' => $id
-        ]);
+        $pokemon = $entityManager->getRepository(Pokemons::class)->find($id);
         if ($pokemon) {
-            $entityManager->remove($pokemon[0]);
+            $entityManager->remove($pokemon);
             $entityManager->flush();
             return $this->GetPokemons($entityManager, $session);
         } else {
@@ -85,5 +82,43 @@ class PokemonsController extends AbstractController
                 'message' => 'Élément non trouvé'
             ]);
         }
+    }
+
+    #[Route('/create_team')]
+    public function CreateTeam(Request $request, EntityManagerInterface $entityManager, SessionInterface $session)
+    {
+        $data = json_decode($request->getContent(), true);
+        if (empty($data['name'])) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Nom d\'équipe manquant',
+            ]);
+        }
+
+        $team = $entityManager->getRepository(Team::class)->findBy(['name' => $data['name']]);
+
+        if ($team) {
+            return $this->json([
+                'success' => false,
+                'message' => 'L\'équipe '.$data['name'].' existe déjà',
+            ]);
+        }
+
+        $userId = $session->get('user_id');
+        $team = new Team();
+        $team->setName($data['name']);
+        $team->setUserId($userId);
+
+        $entityManager->persist($team);
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Équipe créée',
+            'team' => [
+                'id' => $team->getId(),
+                'name' => $team->getName(),
+            ],
+        ]);
     }
 }

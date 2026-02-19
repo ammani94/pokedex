@@ -39,3 +39,7 @@ deletepokemons:
     controller: App\Controller\PokemonsController::deletePokemons
     requirements:
         id: '\d+'
+
+create_team:
+    path: /create_team
+    controller: App\Controller\PokemonsController::CreateTeam
