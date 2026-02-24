@@ -42,4 +42,8 @@ deletepokemons:
 
 create_team:
     path: /create_team
-    controller: App\Controller\PokemonsController::CreateTeam
+    controller: App\Controller\TeamController::CreateTeam
+
+get_teams:
+    path: /getTeams
+    controller: App\Controller\TeamController::GetTeams

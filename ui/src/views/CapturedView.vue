@@ -2,6 +2,14 @@
   <div class="team">
     <router-link to="/team">Créer une équipe</router-link>
   </div>
+  <div class="select_team">
+    <div v-if="teams" class="team_container">
+      <select>
+        <option v-for="listTeams in teams" :key="listTeams.id">{{ listTeams.name }}</option>
+      </select>
+    </div>
+    
+  </div>
   <div>
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
@@ -21,14 +29,13 @@
 <script>
 import axios from 'axios'
 import { ref, toRaw, onMounted } from 'vue'
+let isPopupOpen = ref(false)
 let url = 'https://pokeapi.co/api/v2/pokemon/'
 export default {
   data() {
     return {
       pokemons: null,
-      listPokemon: null,
-      next: null,
-      previous: null,
+      teams: null,
       loading: false,
       error: null,
       formData: {
@@ -38,7 +45,8 @@ export default {
     }
   },
   async mounted() {
-    await this.fetchPokemons()
+    await this.fetchPokemons(),
+    await this.getTeams()
   },
   methods: {
     async fetchPokemons() {
@@ -47,7 +55,6 @@ export default {
       try {
         const response = await axios.get('http://localhost:8080/getpokemons')
         this.listPokemon = response.data.pokemons
-        console.log(this.listPokemon)
         const pokemonDetails = await Promise.all(
           this.listPokemon.map(async (pokemon) => {
             const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
@@ -59,7 +66,6 @@ export default {
           })
         )
         this.pokemons = pokemonDetails
-        console.log(this.pokemons)
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         this.error = "Impossible de charger les données."
@@ -81,6 +87,20 @@ export default {
           })
         )
         this.pokemons = pokemonDetails
+      } catch (err) {
+        console.error("Erreur lors de la récupération:", err)
+        this.error = "Impossible de charger les données."
+      } finally {
+        this.loading = false
+      }
+    },
+    async getTeams() {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await axios.get('http://localhost:8080/getTeams/')
+        this.teams = response.data.teams
+        console.log(this.teams)
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         this.error = "Impossible de charger les données."
