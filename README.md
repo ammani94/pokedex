@@ -2,8 +2,6 @@
 
 Une application web permettant aux utilisateurs de **créer un compte**, **capturer des Pokémon**, et **construire des équipes** en utilisant l'API [PokeAPI](https://pokeapi.co/).
 
-🔗 **Démonstration** : [Lien vers la démo (si disponible)](#)
-
 ---
 
 ## 🎯 Fonctionnalités
@@ -22,7 +20,7 @@ Une application web permettant aux utilisateurs de **créer un compte**, **captu
 |--------------|------------------------------------------------------------------------------|
 | **Frontend** | [Vue.js 3](https://vuejs.org/), [Axios](https://axios-http.com/), [Pinia](https://pinia.vuejs.org/) |
 | **Backend**  | [Symfony 8](https://symfony.com/), [Doctrine ORM](https://www.doctrine-project.org/) |
-| **Base de données** | MySQL/PostgreSQL (au choix)                                           |
+| **Base de données** | MySQL                                           |
 | **API externe** | [PokeAPI](https://pokeapi.co/) (pour les données Pokémon)               |
 
 ---
@@ -33,11 +31,4 @@ Une application web permettant aux utilisateurs de **créer un compte**, **captu
 - PHP 8.2+
 - Composer
 - Node.js (pour le frontend)
-- Base de données (MySQL/PostgreSQL)
-
-### Étapes
-
-1. **Cloner le dépôt** :
-   ```bash
-   git clone https://github.com/ammani94/pokedex.git
-   cd pokedex
+- Base de données (MySQL)
