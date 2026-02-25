@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { ref, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
+const emit = defineEmits(['team-created'])
 const formData = ref({
   name: ''
 })
@@ -18,13 +19,14 @@ const submitCreateTeam = async () => {
             },
           }
         )
-    formData.name = ''
+    formData.value.name = ''
     alert(response.data.message)
+    emit('team-created')
   } catch (error) {
     console.error('Erreur :', error);
     alert('Une erreur est survenue.');
   }
-};
+}
 </script>
 
 <template>

@@ -1,7 +1,8 @@
 <template>
-  <div class="team">
-    <router-link to="/team">Créer une équipe</router-link>
-  </div>
+  <button @click="isPopupOpen = true">Ouvrir la popup</button>
+  <Popup v-model="isPopupOpen">
+    <TeamView @team-created="handleTeamCreated" />
+  </Popup>
   <div class="select_team">
     <div v-if="teams" class="team_container">
       <select>
@@ -29,15 +30,29 @@
 <script>
 import axios from 'axios'
 import { ref, toRaw, onMounted } from 'vue'
-let isPopupOpen = ref(false)
+import Popup from './Popup.vue'
+import TeamView from './TeamView.vue'
 let url = 'https://pokeapi.co/api/v2/pokemon/'
 export default {
+  components: {
+    Popup, TeamView
+  },
+  setup() {
+    const isPopupOpen = ref(false)
+
+    const handleTeamCreated = () => {
+      isPopupOpen.value = false
+    }
+
+    return { isPopupOpen, handleTeamCreated }
+  },
   data() {
     return {
       pokemons: null,
       teams: null,
       loading: false,
       error: null,
+      isPopupOpen: false,
       formData: {
         api_id: '',
         name: ''
