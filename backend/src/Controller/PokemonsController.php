@@ -49,7 +49,7 @@ class PokemonsController extends AbstractController
     }
 
     #[Route('/getpokemons')]
-    public function GetPokemons(Request $request,EntityManagerInterface $entityManager, SessionInterface $session): Response
+    public function GetPokemons(EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
         $userId = $session->get('user_id');
         $pokemons = $entityManager->getRepository(Pokemons::class)->findBy(['user_id' => 1]);
