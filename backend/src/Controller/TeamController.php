@@ -13,6 +13,7 @@ use App\Entity\Users;
 use App\Entity\Pokemons;
 use App\Entity\UserPokemon;
 use App\Entity\Team;
+use App\Entity\TeamPokemon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -76,6 +77,26 @@ class TeamController extends AbstractController
             'success' => true,
             'teams' => $TeamList,
             'user_id' => $userId
+        ]);
+    }
+
+    #[Route('/addPokemonTeam')]
+    public function addPokemonTeam(Request $request, EntityManagerInterface $entityManager, SessionInterface $session)
+    {
+        $data = json_decode($request->getContent(), true);
+        $userId = $session->get('user_id');
+        $team_pokemon = new TeamPokemon();
+        $team_pokemon->setTeamId($data['team_id']);
+        $team_pokemon->setPokemonId($data['pokemon_id']);
+        $team_pokemon->setPosition(1);
+
+        $entityManager->persist($team_pokemon);
+
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'pokemon ajouté à l\'équipe'
         ]);
     }
 }

@@ -47,3 +47,7 @@ create_team:
 get_teams:
     path: /getTeams
     controller: App\Controller\TeamController::GetTeams
+
+addPokemonTeam:
+    path: /addPokemonTeam
+    controller: App\Controller\TeamController::addPokemonTeam

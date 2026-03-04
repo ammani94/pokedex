@@ -83,42 +83,4 @@ class PokemonsController extends AbstractController
             ]);
         }
     }
-
-    #[Route('/create_team')]
-    public function CreateTeam(Request $request, EntityManagerInterface $entityManager, SessionInterface $session)
-    {
-        $data = json_decode($request->getContent(), true);
-        if (empty($data['name'])) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Nom d\'équipe manquant',
-            ]);
-        }
-
-        $team = $entityManager->getRepository(Team::class)->findBy(['name' => $data['name']]);
-
-        if ($team) {
-            return $this->json([
-                'success' => false,
-                'message' => 'L\'équipe '.$data['name'].' existe déjà',
-            ]);
-        }
-
-        $userId = $session->get('user_id');
-        $team = new Team();
-        $team->setName($data['name']);
-        $team->setUserId($userId);
-
-        $entityManager->persist($team);
-        $entityManager->flush();
-
-        return $this->json([
-            'success' => true,
-            'message' => 'Équipe créée',
-            'team' => [
-                'id' => $team->getId(),
-                'name' => $team->getName(),
-            ],
-        ]);
-    }
 }
