@@ -18,7 +18,9 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { ref, toRaw, onMounted } from 'vue'
+import { useAppStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const title = "Pokedex"
@@ -29,18 +31,27 @@ const navLinks = [
   { path: "/captured", text: "Capturés"},
 ]
 let userAccount = ref([])
-
+const store = useAppStore()
 const user = async () => {
   try {
-    const response = await fetch('http://localhost:8080/user', {
-      method: 'GET',
-      credentials: 'include',
-    }) 
-    const result = await response.json()
+    const response = await axios.get(
+          'http://localhost:8080/user',
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+    const result = await response.data
+    //console.log(result)
     if (result.success) {
+      store.setUserSession({
+        email: result.user.email,
+        userId: result.user.id,
+      })
       userAccount.value = result.user
       PokemonInfo.value = result.pokemons_count
-      console.log(PokemonInfo)
     } else {
       router.push({name: 'authentification'})
     }

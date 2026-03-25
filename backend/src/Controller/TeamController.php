@@ -16,6 +16,7 @@ use App\Entity\Team;
 use App\Entity\TeamPokemon;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use App\Repository\TeamPokemonRepository;
 
 class TeamController extends AbstractController
 {
@@ -98,5 +99,35 @@ class TeamController extends AbstractController
             'success' => true,
             'message' => 'pokemon ajouté à l\'équipe'
         ]);
+    }
+
+    #[Route('/getPokemonsInTeams/{id}')]
+    public function getPokemonsInTeams(Request $request,EntityManagerInterface $entityManager, int $id, SessionInterface $session, TeamPokemonRepository $teamRepository)
+    {
+        $data = json_decode($request->getContent(), true);
+        error_log(print_r($id,1));
+        $pokemons = $teamRepository->findByExampleField($data['userId'], $id);
+        error_log(print_r($pokemons,1));
+        if (count($pokemons) > 0) {
+            $PokemonsList = array_map(function ($pokemon) {
+                return [
+                    'id' => $pokemon->getId(),
+                    'user_id' => $pokemon->getUserId(),
+                    'api_id' => $pokemon->getApiId(),
+                    'captured_at' => $pokemon->getCapturedAt()
+                ];
+            }, $pokemons);
+            
+            return $this->json([
+                'success' => true,
+                'pokemons' => $PokemonsList,
+            ]);
+        }
+        return $this->json([
+            'success' => false,
+            'pokemons' => null,
+        ]);
+
+        
     }
 }

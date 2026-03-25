@@ -14,15 +14,19 @@
   <div>
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="pokemons" class="container element" >
-    <div class="pokemon-teams" v-for="pokemon in pokemons_teams" :key="pokemon.name">
+    <div class="container element">
+      <div>Équipe :</div>
+      <div class="pokemon-card" v-for="pokemon in pokemons_teams" :key="pokemon.name">
         <h2>{{ pokemon.name }} (ID: {{ pokemon.id }})</h2>
         <img :src="pokemon.sprites.front_default" :alt="pokemon.name" />
         <p>Types: {{ pokemon.types.map(t => t.type.name).join(', ') }}</p>
         <p>Poids: {{ pokemon.weight / 10 }} kg</p>
         <p>Taille: {{ pokemon.height / 10 }} m</p>
+        <p>Capturé le : {{ pokemon.captured_at }} </p>
         <button @click="() => deletePokemons(pokemon.id_pokemon)"> Libérer </button>
       </div>
+    </div>
+    <div v-if="pokemons" class="container element" >
       <div class="pokemon-card" v-for="pokemon in pokemons" :key="pokemon.name">
         <h2>{{ pokemon.name }} (ID: {{ pokemon.id }})</h2>
         <img :src="pokemon.sprites.front_default" :alt="pokemon.name" />
@@ -38,7 +42,9 @@
 
 <script>
 import axios from 'axios'
-import { ref, toRaw, onMounted } from 'vue'
+import { ref, toRaw, onMounted, computed } from 'vue'
+import { useAppStore } from '@/stores/user'
+
 import Popup from './Popup.vue'
 import TeamView from './TeamView.vue'
 export default {
@@ -60,12 +66,49 @@ export default {
       })
 
     const PokemonsTeams = async (id) => {
+      const store = useAppStore()
       teams_id.value = id
+      loading.value = true
+      error.value = null
+      try {
+        const response = await axios.post('http://localhost:8080/getPokemonsInTeams/'+id,
+          {
+            email: store.userSession.email,
+            userId: store.userSession.userId
+          }
+        )
+        if (response.data.success) {
+            const pokemonDetails = await Promise.all(
+            response.data.pokemons.map(async (pokemon) => {
+              const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
+              return {
+                ...pokemonResponse.data,
+                id_pokemon: pokemon.id,
+                captured_at: pokemon.captured_at.date,
+              }
+            })
+          )
+          pokemons_teams.value = pokemonDetails
+          console.log(pokemons_teams)
+        } else {
+          pokemons_teams.value = null
+        }
+        
+        console.log('pokemons_teams',pokemons_teams.value)
+      } catch (err) {
+        console.error("Erreur lors de la récupération:", err)
+        error.value = "Impossible de charger les données."
+      } finally {
+        loading.value = false
+      }
     }
 
     const addPokemonTeam = async (id) => {
       formData.value.pokemon_id = id
       formData.value.team_id = teams_id.value
+      if (formData.value.team_id == false) {
+        formData.value.team_id = teams.value[0].id
+      }
       const response = await axios.post(
           'http://localhost:8080/addPokemonTeam',
           formData.value,
@@ -83,6 +126,7 @@ export default {
       loading.value = true
       error.value = null
       try {
+        
         const response = await axios.get('http://localhost:8080/getpokemons')
         listPokemon.value = response.data.pokemons
         const pokemonDetails = await Promise.all(
@@ -139,10 +183,12 @@ export default {
     onMounted(async () => {
       await fetchPokemons()
       await fetchTeams()
+      await PokemonsTeams()
     })
 
     return {
       isPopupOpen,
+      pokemons_teams,
       pokemons,
       teams,
       loading,
@@ -156,6 +202,7 @@ export default {
     }
   },
 };
+//const store = useAppStore()
 </script>
 
 <style scoped>

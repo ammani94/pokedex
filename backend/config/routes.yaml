@@ -51,3 +51,9 @@ get_teams:
 addPokemonTeam:
     path: /addPokemonTeam
     controller: App\Controller\TeamController::addPokemonTeam
+
+getpokemonsInTeams:
+    path: /getPokemonsInTeams/{id}
+    controller: App\Controller\TeamController::getPokemonsInTeams
+    requirements:
+        id: '\d+'
