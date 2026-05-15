@@ -65,13 +65,13 @@ export default {
         pokemon_id: ''
       })
 
-    const PokemonsTeams = async (id) => {
+    const PokemonsTeams = async () => {
       const store = useAppStore()
-      teams_id.value = id
+      //teams_id.value
       loading.value = true
       error.value = null
       try {
-        const response = await axios.post('http://localhost:8080/getPokemonsInTeams/'+id,
+        const response = await axios.post('http://localhost:8080/getPokemonsInTeams/'+teams_id.value,
           {
             email: store.userSession.email,
             userId: store.userSession.userId
@@ -202,7 +202,6 @@ export default {
     }
   },
 };
-//const store = useAppStore()
 </script>
 
 <style scoped>

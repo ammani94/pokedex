@@ -27,7 +27,6 @@ const title = "Pokedex"
 let PokemonInfo = ref([])
 const navLinks = [
   { path: "/home", text: "Accueil"},
-  { path: "/", text: "Contact" },
   { path: "/captured", text: "Capturés"},
 ]
 let userAccount = ref([])

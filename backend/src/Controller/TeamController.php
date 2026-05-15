@@ -106,6 +106,7 @@ class TeamController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         error_log(print_r($id,1));
+        error_log(print_r("ETSTDFSGFDRGDFVGDGDFGDSFSDFGSDFGS",1));
         $pokemons = $teamRepository->findByExampleField($data['userId'], $id);
         error_log(print_r($pokemons,1));
         if (count($pokemons) > 0) {

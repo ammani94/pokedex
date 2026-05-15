@@ -1,43 +1,78 @@
+<template>
+  <div class="authentification">
+    <div class="auth-container">
+      <h1 class="auth-title">Créer un compte</h1>
+      
+      <form @submit.prevent="submitForm" class="auth-form">
+        <div class="form-group">
+          <label for="email" class="form-label">Adresse email</label>
+          <input
+            id="email"
+            v-model="formData.email"
+            type="email"
+            placeholder="email"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Mot de passe</label>
+          <input
+            id="password"
+            v-model="formData.password"
+            type="password"
+            placeholder="••••••••"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <button type="submit" @click="() => submitForm()" class="auth-button">
+          Créer un compte
+        </button>
+      </form>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 const formData = ref({
-  email: '',
-  password: ''
-})
-const router = useRouter()
-const submitFormSignup = async () => {
-  try {
-    const response = await fetch('http://localhost:8080/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(toRaw(formData.value)),
-    });
+        email: '',
+        password: ''
+    })
 
-    const result = await response.json();
-    
-    if (result.success) {
-        router.push({name: 'authentification'})
-    } else {
-        alert(result.message)
-        formData.username = ''
-        formData.password = ''
+const submitForm = async () => {
+  try {
+    const response = await axios.post(
+      'http://localhost:8080/signup',
+      formData.value,
+      { withCredentials: true }
+    );
+
+    if (response.data.success) {
+      store.setUserSession({
+        email: response.data.user.email,
+        userId: response.data.user.userId,
+      });
+      router.push({ name: 'home' });
     }
   } catch (error) {
-    console.error('Erreur :', error);
-    alert('Une erreur est survenue.');
+    if (error.response) {
+      alert(error.response.data.message)
+    } else if (error.request) {
+      console.error("Aucune réponse du serveur (problème réseau)");
+    } else {
+      console.error("Erreur inconnue:", error.message);
+    }
   }
-};
+}
 </script>
 
-<template>
-  <div class="signup">
-    <form @submit.prevent="submitFormSignup">
-    <input v-model="formData.email" placeholder="email" required />
-    <input v-model="formData.password" type="password" placeholder="Mot de passe" required />
-    <button type="submit">Créer le compte</button>
-  </form>
-  </div>
-</template>
+<style lang="scss" scoped>
+  @import '@/assets/styles/style';
+</style>
+

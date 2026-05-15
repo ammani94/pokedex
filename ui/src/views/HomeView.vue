@@ -1,4 +1,9 @@
 <template>
+
+  <form @submit.prevent="submitForm">
+    <input v-model="search.name" placeholder="Rechercher..." required />
+    <button @click="() => submitForm()">Rechercher</button>
+  </form>
   <div>
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
@@ -22,55 +27,57 @@
   </div>  
 </template>
 
-<script>
+<script setup>
 import axios from 'axios'
-import { ref, toRaw, onMounted } from 'vue'
-let url = 'https://pokeapi.co/api/v2/pokemon/'
-export default {
-  data() {
-    return {
-      pokemons: null,
-      listPokemon: null,
-      next: null,
-      previous: null,
-      loading: false,
-      error: null,
-      formData: {
-        api_id: '',
-        name: ''
-      }
-    }
-  },
-  async mounted() {
-    await this.fetchPokemons(url)
-  },
-  methods: {
-    async fetchPokemons(url) {
-      this.loading = true
-      this.error = null
+import { ref, toRaw, onMounted,inject } from 'vue'
+import { useAppStore } from '../stores/user'
+const store = useAppStore()
+let pokemons = ref(null)
+const url = 'https://pokeapi.co/api/v2/pokemon/'
+let listPokemon = ref(null)
+let next = ref(null)
+let previous = ref(null)
+let loading = ref(false)
+let error = ref(null)
+let formData = ref({
+    api_id: '',
+    name: ''
+})
+let search = ref({
+    name: ''
+})
+
+const fetchPokemons = async (ChangeUrl) => {
       try {
-        const response = await axios.get(url)
-        this.listPokemon = response.data.results
-        this.next = response.data.next
-        this.previous = response.data.previous
+        if (ChangeUrl === undefined) {
+          ChangeUrl = url
+        }
+        const response = await axios.get(ChangeUrl)
+        listPokemon.value = response.data.results
+        next.value = response.data.next
+        previous.value = response.data.previous
         const pokemonDetails = await Promise.all(
-          this.listPokemon.map(async (pokemon) => {
+          listPokemon.value.map(async (pokemon) => {
             const pokemonResponse = await axios.get(pokemon.url)
             return pokemonResponse.data
           })
         )
-        this.pokemons = pokemonDetails
+        pokemons.value = pokemonDetails
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
-        this.error = "Impossible de charger les données."
+        error.value = "Impossible de charger les données."
       } finally {
-        this.loading = false
+        loading.value = false
       }
-    },
-    async catchPokemons(listPokemon) {
+}
+
+const catchPokemons = async (listPokemon) => {
       try {
         this.formData.api_id = listPokemon.id
         this.formData.name = listPokemon.name
+        if (store.userSession.email !== undefined) {
+          this.formData.userId = store.userSession.email
+        }
         const response = await axios.post(
           'http://localhost:8080/catch',
           this.formData,
@@ -85,9 +92,18 @@ export default {
       } catch (error) {
         console.error("Erreur :", error)
       }
-    },
-  },
-};
+}
+
+const submitForm = async () => {
+      try {
+        const response = await axios.get(url+search.value.name)
+        pokemons.value = [response.data]
+      } catch (error) {
+        console.error("Erreur :", error)
+      }
+}
+
+onMounted(fetchPokemons)
 </script>
 
 <style scoped>
