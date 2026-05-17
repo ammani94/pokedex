@@ -77,7 +77,10 @@ class PokemonsController extends AbstractController
         if ($pokemon) {
             $entityManager->remove($pokemon);
             $entityManager->flush();
-            return $this->GetPokemons($request, $entityManager, $session, $pokemonRepository);
+            return $this->json([
+                'success' => true,
+                'message' => 'pokemon libéré'
+            ]);
         } else {
             return $this->json([
                 'success' => false,

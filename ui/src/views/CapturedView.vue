@@ -164,17 +164,8 @@ const fetchPokemons = async() => {
         }, {
           withCredentials: true
         })
-        listPokemon.value = response.data.results
-        const pokemonDetails = await Promise.all(
-          listPokemon.value.map(async (pokemon) => {
-            const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
-            return {
-                ...pokemonResponse.data,
-                id_pokemon: pokemon.id
-            }
-          })
-        )
-        pokemons.value = pokemonDetails
+        alert(response.data.message)
+        fetchPokemons()
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         error = "Impossible de charger les données."
