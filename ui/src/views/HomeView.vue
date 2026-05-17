@@ -41,7 +41,8 @@ let loading = ref(false)
 let error = ref(null)
 let formData = ref({
     api_id: '',
-    name: ''
+    name: '',
+    userId: ''
 })
 let search = ref({
     name: ''
@@ -73,14 +74,14 @@ const fetchPokemons = async (ChangeUrl) => {
 
 const catchPokemons = async (listPokemon) => {
       try {
-        this.formData.api_id = listPokemon.id
-        this.formData.name = listPokemon.name
-        if (store.userSession.email !== undefined) {
-          this.formData.userId = store.userSession.email
+        formData.value.api_id = listPokemon.id
+        formData.value.name = listPokemon.name
+        if (store.userSession.userId !== undefined) {
+          formData.value.userId = store.userSession.userId
         }
         const response = await axios.post(
           'http://localhost:8080/catch',
-          this.formData,
+          formData.value,
           {
             withCredentials: true,
             headers: {

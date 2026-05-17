@@ -62,7 +62,7 @@ class TeamController extends AbstractController
     public function GetTeams(Request $request, EntityManagerInterface $entityManager, SessionInterface $session)
     {
         $data = json_decode($request->getContent(), true);
-        $userId = $session->get('user_id');
+        $userId = $data['user_id'];
         $teams = $entityManager->getRepository(Team::class)->findBy(
             ['user_id' => 1]
         );
@@ -85,7 +85,7 @@ class TeamController extends AbstractController
     public function addPokemonTeam(Request $request, EntityManagerInterface $entityManager, SessionInterface $session)
     {
         $data = json_decode($request->getContent(), true);
-        $userId = $session->get('user_id');
+        $userId = $data['user_id'];
         $team_pokemon = new TeamPokemon();
         $team_pokemon->setTeamId($data['team_id']);
         $team_pokemon->setPokemonId($data['pokemon_id']);
@@ -105,10 +105,8 @@ class TeamController extends AbstractController
     public function getPokemonsInTeams(Request $request,EntityManagerInterface $entityManager, int $id, SessionInterface $session, TeamPokemonRepository $teamRepository)
     {
         $data = json_decode($request->getContent(), true);
-        error_log(print_r($id,1));
-        error_log(print_r("ETSTDFSGFDRGDFVGDGDFGDSFSDFGSDFGS",1));
+        $userId = $data['user_id'];
         $pokemons = $teamRepository->findByExampleField($data['userId'], $id);
-        error_log(print_r($pokemons,1));
         if (count($pokemons) > 0) {
             $PokemonsList = array_map(function ($pokemon) {
                 return [
@@ -130,5 +128,27 @@ class TeamController extends AbstractController
         ]);
 
         
+    }
+
+    #[Route('/team/{team_id}/pokemon/{pokemon_id}')]
+    public function GetPokemonsOutOfTeams(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, TeamPokemonRepository $teamRepository, int $team_id, int $pokemon_id): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $userId = $data['user_id'];
+        $team_pokemon = new TeamPokemon();
+        $pokemon = $entityManager->getRepository(TeamPokemon::class)->findOneBy(['team_id' => $team_id, 'pokemon_id' => $pokemon_id]);
+        if ($pokemon) {
+            $entityManager->remove($pokemon);
+            $entityManager->flush();
+            return $this->json([
+                'success' => true,
+                'message' => 'Élément supprimé'
+            ]);
+        } else {
+            return $this->json([
+                'success' => true,
+                'message' => 'Élément non trouvé'
+            ]);
+        }
     }
 }

@@ -69,7 +69,7 @@ const formData = ref({
     if (response.data.success) {
       store.setUserSession({
         email: response.data.user.email,
-        userId: response.data.user.userId,
+        userId: response.data.user.id,
       });
       router.push({ name: 'home' });
     }

@@ -21,7 +21,25 @@ class TeamPokemonRepository extends ServiceEntityRepository
     //    /**
     //     * @return TeamPokemon[] Returns an array of TeamPokemon objects
     //     */
-    public function findByExampleField($value, $team): array
+    public function GetPokemonWithoutTeams($userID): array
+{
+    return $this->createQueryBuilder('p')
+        ->select('tp')
+        ->leftjoin(
+            TeamPokemon::class,
+            'tp',
+            \Doctrine\ORM\Query\Expr\Join::WITH,
+            'p.id = tp.pokemon_id'
+        )
+        ->andWhere('p.user_id = :userID')
+        ->andWhere('tp.id IS NULL')
+        ->setParameter('userID', $userID)
+        ->getQuery()
+        ->getResult();
+}
+
+
+public function GetPokemonWithTeams($userID, $team): array
 {
     return $this->createQueryBuilder('t')
         ->select('p')
@@ -31,8 +49,8 @@ class TeamPokemonRepository extends ServiceEntityRepository
             \Doctrine\ORM\Query\Expr\Join::WITH,
             'p.id = t.pokemon_id'
         )
-        ->andWhere('p.user_id = :val')
-        ->setParameter('val', $value)
+        ->andWhere('p.user_id = :userID')
+        ->setParameter('userID', $userID)
         ->andWhere('t.team_id = :team')
         ->setParameter('team', $team)
         ->getQuery()

@@ -53,7 +53,14 @@ addPokemonTeam:
     controller: App\Controller\TeamController::addPokemonTeam
 
 getpokemonsInTeams:
-    path: /getPokemonsInTeams/{id}
-    controller: App\Controller\TeamController::getPokemonsInTeams
+    path: /pokemons/team/{id}
+    controller: App\Controller\PokemonsController::GetPokemonsInTeams
     requirements:
         id: '\d+'
+
+getpokemonsOutOfTeams:
+    path: /team/{team_id}/pokemon/{pokemon_id}
+    controller: App\Controller\TeamController::GetPokemonsOutOfTeams
+    requirements:
+        team_id: '\d+'
+        pokemon_id: '\d+'

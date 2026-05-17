@@ -15,6 +15,8 @@ use App\Entity\UserPokemon;
 use App\Entity\Team;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use App\Repository\TeamPokemonRepository;
+use App\Repository\PokemonsRepository;
 
 class PokemonsController extends AbstractController
 {
@@ -22,8 +24,7 @@ class PokemonsController extends AbstractController
     public function catch(Request $request, EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
         $data = json_decode($request->getContent(), true);
-        $userId = $session->get('user_id');
-
+        $userId = $data['userId'];
         $pokemons = $entityManager->getRepository(Pokemons::class)->findBy([
             'api_id' => $data['api_id'],
             'user_id' => $userId,
@@ -49,10 +50,11 @@ class PokemonsController extends AbstractController
     }
 
     #[Route('/getpokemons')]
-    public function GetPokemons(EntityManagerInterface $entityManager, SessionInterface $session): Response
+    public function GetPokemons(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, PokemonsRepository $pokemonRepository): Response
     {
-        $userId = $session->get('user_id');
-        $pokemons = $entityManager->getRepository(Pokemons::class)->findBy(['user_id' => 1]);
+        $data = json_decode($request->getContent(), true);
+        $userId = $data['user_id'];
+        $pokemons = $pokemonRepository->getPokemonsWithoutTeams($userId);
         $PokemonsList = array_map(function ($pokemon) {
             return [
                 'id' => $pokemon->getId(),
@@ -69,13 +71,13 @@ class PokemonsController extends AbstractController
     }
 
     #[Route('/deletePokemon/{id}')]
-    public function deletePokemons(EntityManagerInterface $entityManager, int $id, SessionInterface $session)
+    public function deletePokemons(Request $request, EntityManagerInterface $entityManager, int $id, SessionInterface $session, PokemonsRepository $pokemonRepository)
     {
         $pokemon = $entityManager->getRepository(Pokemons::class)->find($id);
         if ($pokemon) {
             $entityManager->remove($pokemon);
             $entityManager->flush();
-            return $this->GetPokemons($entityManager, $session);
+            return $this->GetPokemons($request, $entityManager, $session, $pokemonRepository);
         } else {
             return $this->json([
                 'success' => false,
@@ -83,4 +85,28 @@ class PokemonsController extends AbstractController
             ]);
         }
     }
+
+    #[Route('/pokemons/team/{id}')]
+    public function GetPokemonsInTeams(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, TeamPokemonRepository $teamRepository, int $id,): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $userId = $data['user_id'];
+        $pokemons = $teamRepository->GetPokemonWithTeams($userId, $id);
+        $PokemonsList = array_map(function ($pokemon) {
+            return [
+                'id' => $pokemon->getId(),
+                'user_id' => $pokemon->getUserId(),
+                'api_id' => $pokemon->getApiId(),
+                'captured_at' => $pokemon->getCapturedAt()
+            ];
+        }, $pokemons);
+
+        return $this->json([
+            'success' => true,
+            'pokemons' => $PokemonsList,
+        ]);
+    }
+
+    
+
 }
