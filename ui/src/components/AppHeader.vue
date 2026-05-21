@@ -28,6 +28,7 @@ let PokemonInfo = ref([])
 const navLinks = [
   { path: "/home", text: "Accueil"},
   { path: "/captured", text: "Capturés"},
+  { path: "/ia", text: "IA"},
 ]
 let userAccount = ref([])
 const store = useAppStore()
@@ -43,7 +44,6 @@ const user = async () => {
           }
         )
     const result = await response.data
-    //console.log(result)
     if (result.success) {
       store.setUserSession({
         email: result.user.email,
