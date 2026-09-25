@@ -15,6 +15,7 @@
 
     <div v-if="pokemons" class="grid">
       <article v-for="p in pokemons" :key="p.name" class="card">
+        <router-link :to="p.pokemon_path">
         <span class="card-id">#{{ String(p.id).padStart(3, '0') }}</span>
         <img class="card-img" :src="p.sprites.front_default" :alt="p.name" />
         <h3 class="card-name">{{ p.name }}</h3>
@@ -30,6 +31,7 @@
         <button class="btn btn-catch btn-block" @click="catchPokemons(p)">
           Capturer
         </button>
+        </router-link>
       </article>
     </div>
 
@@ -78,7 +80,10 @@ const fetchPokemons = async (ChangeUrl) => {
         const pokemonDetails = await Promise.all(
           listPokemon.value.map(async (pokemon) => {
             const pokemonResponse = await axios.get(pokemon.url)
-            return pokemonResponse.data
+            return {
+                ...pokemonResponse.data,
+                pokemon_path: "/pokemon/"+pokemonResponse.data.id,
+            }
           })
         )
         pokemons.value = pokemonDetails
