@@ -1,11 +1,14 @@
 import { fileURLToPath, URL } from 'node:url'
+
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig({
   plugins: [
     vue(),
+    vueJsx(),
     vueDevTools(),
   ],
   resolve: {
@@ -14,11 +17,14 @@ export default defineConfig({
     },
   },
   server: {
-    host: '0.0.0.0',  // Écoute sur toutes les interfaces réseau
-    port: 5173,       // Port par défaut de Vite
-    strictPort: true, // Échoue si le port est déjà utilisé
+    host: '0.0.0.0',
+    port: 5173,
+    allowedHosts: [
+        'app'
+    ],
+    strictPort: true,
     watch: {
-      usePolling: true,  // Force Vite à utiliser le polling pour détecter les changements
+      usePolling: true,
     },
   },
 })
